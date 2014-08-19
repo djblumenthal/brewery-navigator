@@ -1,0 +1,9 @@
+extends layout
+
+block content
+	h1 Brewery Navigator
+	form#loc-search-form
+		input#city-field(type='text' placeholder='City' required)
+		input#state-field(type='text' placeholder='State' required)
+		button#city-state-search(type='submit') Search
+	ol#loc-search-results
