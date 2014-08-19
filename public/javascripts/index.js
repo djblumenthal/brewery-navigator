@@ -33,15 +33,40 @@ $(document).on('ready', function(){
 				}
 			}
 
-/*			// show beer menu
+			// show beer menu
 			$('body').on('click', '.show-beers-button', function(){
 				$(this).toggleClass('show-beers-button hide-beers-button').text('Hide Beers');
 				var brewerydbBreweryId = $(this).closest('.brewery-location').attr('data-brewerydb-breweryid');
-				$.getJSON('/beermenu', {id: brewerydbBreweryId}, function(beerMenuData){
-
-				})
+				var beerMenuDiv = $('<div>').addClass('beer-menu-div').attr('data-brewerydb-breweryid', brewerydbBreweryId);
+				var beerMenuList = $('<ol>').addClass('beer-menu-list').attr('data-brewerydb-breweryid', brewerydbBreweryId);
+				beerMenuDiv.append(beerMenuList);
+				$(this).closest('.brewery-location').append(beerMenuDiv);
 				
-			})*/
+				$.getJSON('/beermenu', {id: brewerydbBreweryId}, function(beerMenuData){
+					if (!beerMenuData.data){
+						beerMenuDiv.text('No beer information available :-( ');
+					}
+					else {
+						for (var i = 0; i < beerMenuData.data.length; i++) {
+							var beerChoice = beerMenuData.data[i];
+							var beerId = beerChoice.id;
+							var beerChoiceListItem = $('<li>').addClass('beer-choice-list-item').attr('data-brewerydb-beerid', beerId).text(beerChoice.name);
+							var beerChoiceStyle = $('<h6>').addClass('beer-choice-style').attr('data-brewerydb-styleid', beerChoice.styleId).text(beerChoice.style.name);
+							var abvIbuStats = $('<h6>').addClass('abv-ibu-stats').text('ABV: ' + (beerChoice.abv || 'n/a') + '  IBU: ' + (beerChoice.ibu || 'n/a'));
+							var beerChoiceDescription = $('<p>').addClass('beer-choice-description').text(beerChoice.description);
+							beerChoiceListItem.append(beerChoiceStyle);
+							beerChoiceListItem.append(abvIbuStats);
+							if (beerChoice.available){
+								var availabilityInfo = $('<h6>').addClass('availability-info').text(beerChoice.available.description);
+								beerChoiceListItem.append(availabilityInfo);
+							}
+							beerChoiceListItem.append(beerChoiceDescription);
+							beerMenuList.append(beerChoiceListItem);
+						};
+					}
+				});
+				
+			});
 
 			// add more brewery info 
 			$('body').on('click', '.more-brewery-info-button', function(){
