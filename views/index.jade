@@ -3,7 +3,23 @@ extends layout
 block content
 	h1 Brewery Navigator
 	form#loc-search-form
-		input#city-field(type='text' placeholder='City' required)
-		input#state-field(type='text' placeholder='State' required)
+		label(for='brewery-beer-search') Brewery Search
+		br
+		input#search-field(type='text' placeholder='Brewery name' name='brewery-beer-search')
+		br
+		//- filters to choose between brewery or beer search
+		//- h5 Filters:
+		//- label Breweries
+		//- 	input#brewery-filter(type='radio' name='filter-beer-or-brewery' value='brewery' checked='checked')
+		//- label Beers
+		//- 	input#beer-filter(type='radio' name='filter-beer-or-brewery' value='beer')
+		//- br
+		input#city-field(type='text' placeholder='City')
+		br
+		input#state-field(type='text' placeholder='State')
+		br
+		//- label(for='locationonly') Search Breweries by Location
+		//- 	input#location-only(type='checkbox' name='locationonly')
 		button#city-state-search(type='submit') Search
-	ol#loc-search-results
+	p#error-message
+	ol#search-results-list

@@ -36,6 +36,16 @@ app.get('/beermenu', function(req, res){
 	});
 });
 
+app.get('/brewerysearch', function(req, res){
+	var brewerySearchQueryURL = 'http://api.brewerydb.com/v2/search/?key=ddb63d7628e261264b80157e75be9aea&type=brewery&q=' + req.query.q + '&withLocations=Y';
+	console.log(brewerySearchQueryURL);
+	request(brewerySearchQueryURL, function(error, response, body){
+		if (!error && response.statusCode == 200){
+			res.send(body);
+		}
+	});
+});
+
 var server = app.listen(4790, function() {
 	console.log('Express server listening on port ' + server.address().port);
 });
