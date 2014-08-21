@@ -9,15 +9,7 @@ block content
 					.form-group
 						label.col-xs-2.control-label.control-label-lg(for='brewery-beer-search') Brewery
 						.col-xs-10
-							input.form-control#search-field(type='text' placeholder='Brewery name' name='brewery-beer-search')
-					
-					//- filters to choose between brewery or beer search
-					//- h5 Filters:
-					//- label Breweries
-					//- 	input#brewery-filter(type='radio' name='filter-beer-or-brewery' value='brewery' checked='checked')
-					//- label Beers
-					//- 	input#beer-filter(type='radio' name='filter-beer-or-brewery' value='beer')
-					//- br
+							input.form-control#brewery-field(type='text' placeholder='Brewery name' name='brewery-beer-search')
 					.form-group
 						label.col-xs-2.control-label(for='city-field') City
 						.col-xs-10
@@ -25,9 +17,7 @@ block content
 					.form-group
 						label.col-xs-2.control-label(for='state-field') State
 						.col-xs-10
-							input.form-control#state-field(type='text' placeholder='State - ex) California, not CA' name='state-field')
-					//- label(for='locationonly') Search Breweries by Location
-					//- 	input#location-only(type='checkbox' name='locationonly')
+							input.form-control#state-field(type='text' placeholder='State - eg. California, not CA' name='state-field')
 					button.btn.btn-primary.btn-lg.btn-block#city-state-search(type='submit') Search
-				p.text-danger#error-message
+					.alert.alert-danger#error-message-div(style='display:none')
 				ol#search-results-list

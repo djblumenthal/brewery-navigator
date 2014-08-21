@@ -1,69 +1,73 @@
 $(document).on('ready', function(){
-	// disable other search inputs if location only checked
-	$('#location-only').on('click', function(){
-		if ($('#location-only').prop('checked')){
-			$('#search-field').prop('disabled', true);
-			$('#brewery-filter').prop('disabled', true);
-			$('#beer-filter').prop('disabled', true);
-		}
-		else {
-			$('#search-field').prop('disabled', false);
-			$('#brewery-filter').prop('disabled', false);
-			$('#beer-filter').prop('disabled', false);
-		}
-		
-	});
 
-	
+	// on submitting search 
 	$('#loc-search-form').on('submit', function(e){
+		// prevent page refresh
 		e.preventDefault();
 		
-		var breweryFieldValue = $('#search-field').val();
+
+		
+		var searchResultsList = $('#search-results-list');
+		var breweryFieldValue = $('#brewery-field').val();
 		var cityFieldValue = $('#city-field').val();
 		var stateFieldValue = $('#state-field').val();
+		var errorMessageDiv = $('#error-message-div');
 		
-		// only allow search when a field has been filled in
+		// hide error message div (if it isn't already hidden)
+		errorMessageDiv.hide();
+
+		// clear search results list for new search
+		searchResultsList.empty();
+		
+		// if all search fields are empty, throw error via error div
 		if ((breweryFieldValue == '') && (cityFieldValue == '') && (stateFieldValue == '')){
-			$('#error-message').text('Oops!  I need a brewery name (or your best guess), a city, or a state before I can start hunting.');
+			errorMessageDiv.text('Oops!  I need a brewery name (or your best guess), a city, or a state before I can start hunting.').show();
 		}
 
-		// check if it's a location only search
+		// if only location fields are filled in, search via location route, passing city & state in req body
 		else if (breweryFieldValue == ''){
-
-
-			// render location search results
 			$.getJSON('/locsearch', {locality: cityFieldValue, region: stateFieldValue}, function(returnedLocData){
-				$('#search-results-list').empty();
-				// if get request succesful but no locations found, throw error
-				$('#error-message').text('');
-				if (!returnedLocData.data){
-					$('#error-message').text('I can\'t find any breweries in that city or state.  Is that on the moon?  Check your spelling, and use the full state name in your search.  For example, \"Colorado\", not \"CO\".')
+				
+				// if get request succesful but no locations are found, throw error via error div
+				if (!returnedLocData.data){	
+					errorMessageDiv.text('I can\'t find any breweries in that city or state.  Is that on the moon?  Check your spelling, and use the full state name in your search.  For example, \"Colorado\", not \"CO\".').show();
 				} 
-				else {
 
+				else {
+					// iterate through each location element in the location data array 
 					for (var i=0; i < returnedLocData.data.length; i++){
 						var locData = returnedLocData.data[i];
-						// only render breweries that are open to the public
-						if ( locData.openToPublic == 'Y'){
+						
+						// filter out locations closed to the public
+						if ( locData.openToPublic == 'Y') {
+							
 							// create Brewery List Item with brewery name
-							var breweryLoc = $('<li>').addClass('brewery-location').html('<span class=brewery-name>' + locData.brewery.name + '</span>').attr({'data-brewerydb-locid': locData.id, 'data-brewerydb-breweryid': locData.breweryId});
-							var breweryPhone = $('<h6>').addClass('brewery-phone').text('Phone: ' + locData.phone);
-							breweryLoc.append(breweryPhone);					
-							// if there is a website, append it to the brewery info
+							var breweryLoc = $('<li>').addClass('brewery-location bg-success').html('<span class=brewery-name>' + locData.brewery.name + '</span>').attr({'data-brewerydb-locid': locData.id, 'data-brewerydb-breweryid': locData.breweryId});
+
+							// create brewery phone number description
+							var breweryPhone = $('<h6>').addClass('brewery-phone').text('Phone: ' + (locData.phone || 'n/a'));
+
+							// if the brewery has a website, create an anchor tag
+							var breweryWebsiteLink;
 							if (locData.website){
-								var breweryWebsite = $('<h6>').addClass('brewery-website').text('Website: ' + locData.website);	
-								breweryLoc.append(breweryWebsite);
+								breweryWebsiteLink = $('<a>').attr('href', locData.website).text(locData.website);
 							}
-							if ((!locData.website) && (locData.brewery.website)){
-								var breweryWebsite = $('<h6>').addClass('brewery-website').text('Website: ' + locData.brewery.website);
-								breweryLoc.append(breweryWebsite);
+							else if (locData.brewery.website) {
+								breweryWebsiteLink = $('<a>').attr('href', locData.brewery.website).text(locData.brewery.website);
 							}
+							else {
+								breweryWebsiteLink = '';
+							}
+
+
+
+							// Create get beers button & more brewery info button
 							var getBeersButton = $('<button>').addClass('get-beers-button btn btn-warning btn-sm').attr({'type': 'button', 'data-brewerydb-locid': locData.id, 'data-brewerydb-breweryid': locData.breweryId}).text('Beer Menu');
 							var moreInfoButton = $('<button>').addClass('get-more-brewery-info-button btn btn-info btn-sm').attr({'type': 'button', 'data-brewerydb-locid': locData.id, 'data-brewerydb-breweryid': locData.breweryId}).text('More Info');
-							breweryLoc.append(getBeersButton);
-							breweryLoc.append(moreInfoButton);
+							var breweryButtons = $('<div>').addClass('btn-group brewery-buttons').append([getBeersButton, moreInfoButton]);
+							breweryLoc.append([breweryPhone, breweryWebsiteLink, '<br>',breweryButtons]);
 							// append the list item & info to the ordered search results list
-							$('#search-results-list').append(breweryLoc);
+							searchResultsList.append(breweryLoc);
 
 
 						}
@@ -73,14 +77,14 @@ $(document).on('ready', function(){
 
 				// get beer menu
 				$('body').on('click', '.get-beers-button', function(){
-					$(this).toggleClass('get-beers-button hide-beers-button').text('Hide Beers');
+					$(this).addClass('hide-beers-button').removeClass('get-beers-button').text('Hide Beers');
 					
 					// hide other beer menus if they're visible to make room for brewery info 
 					$('.beer-menu-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('hide-beers-button show-beers-button').text('Beer Menu');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('hide-beers-button').addClass('show-beers-button').text('Beer Menu');
 
 						}
 					});				
@@ -89,8 +93,8 @@ $(document).on('ready', function(){
 					$('.more-brewery-info-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('less-brewery-info-button more-brewery-info-button').text('More Info');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('less-brewery-info-button').addClass('more-brewery-info-button').text('More Info');
 
 						}
 					});
@@ -110,7 +114,7 @@ $(document).on('ready', function(){
 								var beerChoice = beerMenuData.data[i];
 								var beerId = beerChoice.id;
 								var beerChoiceStyleObj = (beerChoice.style || {});
-								var beerChoiceListItem = $('<li>').addClass('beer-choice-list-item').attr('data-brewerydb-beerid', beerId).text(beerChoice.name);
+								var beerChoiceListItem = $('<li>').addClass('beer-choice-list-item bg-warning').attr('data-brewerydb-beerid', beerId).text(beerChoice.name);
 								var beerChoiceStyle = $('<h6>').addClass('beer-choice-style').attr('data-brewerydb-styleid', beerChoice.styleId).text(beerChoiceStyleObj.name);
 								var abvIbuStats = $('<h6>').addClass('abv-ibu-stats').text('ABV: ' + (beerChoice.abv || 'n/a') + '  IBU: ' + (beerChoice.ibu || 'n/a'));
 								var beerChoiceDescription = $('<p>').addClass('beer-choice-description').text(beerChoice.description);
@@ -130,21 +134,21 @@ $(document).on('ready', function(){
 
 				// Hide beers menu
 				$('body').on('click', '.hide-beers-button', function(){
-					$(this).toggleClass('hide-beers-button show-beers-button').text('Beer Menu');
+					$(this).removeClass('hide-beers-button').addClass('show-beers-button').text('Beer Menu');
 					var brewerydbBreweryId = $(this).closest('.brewery-location').attr('data-brewerydb-breweryid');
 					$('.beer-menu-div[data-brewerydb-breweryid='+brewerydbBreweryId+']').hide();
 				});			
 
 				// Show beers Menu (w/o reloading get request)
 				$('body').on('click', '.show-beers-button', function(){
-					$(this).toggleClass('hide-beers-button show-beers-button').text('Hide Beers');
+					$(this).addClass('hide-beers-button').removeClass('show-beers-button').text('Hide Beers');
 					
 					// hide other beer menus if they're visible to make room for brewery info 
 					$('.beer-menu-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('hide-beers-button show-beers-button').text('Beer Menu');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('hide-beers-button').addClass('show-beers-button').text('Beer Menu');
 
 						}
 					});				
@@ -153,8 +157,8 @@ $(document).on('ready', function(){
 					$('.more-brewery-info-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('less-brewery-info-button more-brewery-info-button').text('More Info');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('less-brewery-info-button').addClass('more-brewery-info-button').text('More Info');
 
 						}
 					});
@@ -166,13 +170,13 @@ $(document).on('ready', function(){
 
 				// get more brewery info 
 				$('body').on('click', '.get-more-brewery-info-button', function(){
-					$(this).toggleClass('get-more-brewery-info-button less-brewery-info-button').text('Less Info');
+					$(this).addClass('less-brewery-info-button').removeClass('get-more-brewery-info-button').text('Less Info');
 					// hide other beer menus if they're visible to make room for brewery info 
 					$('.beer-menu-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('hide-beers-button show-beers-button').text('Beer Menu');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('hide-beers-button').addClass('show-beers-button').text('Beer Menu');
 
 						}
 					});				
@@ -181,8 +185,8 @@ $(document).on('ready', function(){
 					$('.more-brewery-info-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('less-brewery-info-button more-brewery-info-button').text('More Info');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('less-brewery-info-button').addClass('more-brewery-info-button').text('More Info');
 
 						}
 					});
@@ -194,7 +198,7 @@ $(document).on('ready', function(){
 					for(var i=0; i<returnedLocData.data.length; i++){
 						if (returnedLocData.data[i].id == brewerydbLocationId){
 							var locData = returnedLocData.data[i];
-							var moreBreweryInfoDiv = $('<div>').addClass('more-brewery-info-div').attr({'data-brewerydb-locid': locData.id, 'data-brewerydb-breweryid': locData.breweryId});
+							var moreBreweryInfoDiv = $('<div>').addClass('more-brewery-info-div bg-info').attr({'data-brewerydb-locid': locData.id, 'data-brewerydb-breweryid': locData.breweryId});
 							var breweryAddress = $('<p>').addClass('brewery-address').html(locData.streetAddress + (locData.extendedAddress || '') + '<br>' + locData.locality + ', ' + locData.region + ' ' + locData.postalCode);
 							moreBreweryInfoDiv.append(breweryAddress);
 							if (locData.hoursOfOperation){
@@ -212,20 +216,20 @@ $(document).on('ready', function(){
 				});
 				// hide more brewery info div
 				$('body').on('click', '.less-brewery-info-button', function(){
-					$(this).toggleClass('more-brewery-info-button less-brewery-info-button').text('More Info');
+					$(this).addClass('more-brewery-info-button').removeClass('less-brewery-info-button').text('More Info');
 					var brewerydbLocationId = $(this).closest('.brewery-location').attr('data-brewerydb-locid');
 					$('.more-brewery-info-div[data-brewerydb-locid='+brewerydbLocationId+']').hide();
 				});			
 				// show more brewery info div
 				$('body').on('click', '.more-brewery-info-button', function(){
-					$(this).toggleClass('more-brewery-info-button less-brewery-info-button').text('Less Info');
+					$(this).removeClass('more-brewery-info-button').addClass('less-brewery-info-button').text('Less Info');
 					
 					// hide other beer menu info to make room for brewery info TEST CHANGE!!
 					$('.beer-menu-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('hide-beers-button show-beers-button').text('Beer Menu');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('hide-beers-button').addClass('show-beers-button').text('Beer Menu');
 
 						}
 					});
@@ -234,8 +238,8 @@ $(document).on('ready', function(){
 					$('.more-brewery-info-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('less-brewery-info-button more-brewery-info-button').text('More Info');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('less-brewery-info-button').addClass('more-brewery-info-button').text('More Info');
 
 						}
 					});
@@ -252,11 +256,10 @@ $(document).on('ready', function(){
 
 		else {
 			$.getJSON('/brewerysearch', {q: breweryFieldValue}, function(returnedBrewerySearchData){
-				$('#search-results-list').empty();
 				// if get request succesful but no breweries found, throw error
-				$('#error-message').text('');
 				if (!returnedBrewerySearchData.data){
-					$('#error-message').text('I can\'t find any breweries matching that criteria.  Check your spelling, and if you\'re filtering by state, remember to use the full state name.  For example, \"Colorado\", not \"CO\".')
+
+					errorMessageDiv.text('I can\'t find any breweries matching that criteria.  Check your spelling, and if you\'re filtering by state, remember to use the full state name.  For example, \"Colorado\", not \"CO\".').show();
 				} 
 				else {
 					for (var i=0; i<returnedBrewerySearchData.data.length; i++){
@@ -269,27 +272,27 @@ $(document).on('ready', function(){
 
 							// 	// Adding render functionality to Brewery Search
 								
-								var breweryLoc = $('<li>').addClass('brewery-location').text(breweryData.name).attr({'data-brewerydb-locid': brewerySearchLoc.id, 'data-brewerydb-breweryid': breweryData.id});
-								var breweryPhone = $('<h6>').addClass('brewery-phone').text('Phone: ' + brewerySearchLoc.phone);
-								breweryLoc.append(breweryPhone);					
+								var breweryLoc = $('<li>').addClass('brewery-location bg-success').text(breweryData.name).attr({'data-brewerydb-locid': brewerySearchLoc.id, 'data-brewerydb-breweryid': breweryData.id});
+								var breweryPhone = $('<h6>').addClass('brewery-phone').text('Phone: ' + brewerySearchLoc.phone);					
 								// if there is a website, append it to the brewery info
+								var breweryWebsiteLink;
 								if (brewerySearchLoc.website){
-									var breweryWebsite = $('<h6>').addClass('brewery-website').text('Website: ' + brewerySearchLoc.website);	
-									breweryLoc.append(breweryWebsite);
+									breweryWebsiteLink = $('<a>').attr('href', brewerySearchLoc.website).addClass('brewery-website').text(brewerySearchLoc.website);	
 								}
-								if ((!brewerySearchLoc.website) && (breweryData.website)){
-									var breweryWebsite = $('<h6>').addClass('brewery-website').text('Website: ' + breweryData.website);
-									breweryLoc.append(breweryWebsite);
+								else if (breweryData.website){
+									breweryWebsiteLink = $('<a>').attr('href', breweryData.website).addClass('brewery-website').text(breweryData.website);	
+								}
+								else{
+									breweryWebsiteLink = '';
 								}
 								var getBeersButton = $('<button>').addClass('get-beers-button btn btn-warning btn-sm').attr({'type': 'button', 'data-brewerydb-locid': brewerySearchLoc.id, 'data-brewerydb-breweryid': breweryData.id}).text('Beer Menu');
 								var moreInfoButton = $('<button>').addClass('get-more-brewery-info-button btn btn-info btn-sm').attr({'type': 'button', 'data-brewerydb-locid': brewerySearchLoc.id, 'data-brewerydb-breweryid': breweryData.id}).text('More Info');
-								breweryLoc.append(getBeersButton);
-								breweryLoc.append(moreInfoButton);
+								var breweryButtons = $('<div>').addClass('btn-group brewery-buttons').append([getBeersButton, moreInfoButton]);
+								breweryLoc.append([breweryPhone, breweryWebsiteLink, '<br>', breweryButtons]);
 								// append the list item & info to the ordered search results list
-								$('#search-results-list').append(breweryLoc);
+								searchResultsList.append(breweryLoc);
 								break;
 							}
-
 
 						}
 						
@@ -298,14 +301,14 @@ $(document).on('ready', function(){
 
 				// get beer menu
 				$('body').on('click', '.get-beers-button', function(){
-					$(this).toggleClass('get-beers-button hide-beers-button').text('Hide Beers');
+					$(this).addClass('hide-beers-button').removeClass('get-beers-button').text('Hide Beers');
 					
 					// hide other beer menus if they're visible to make room for brewery info 
 					$('.beer-menu-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('hide-beers-button show-beers-button').text('Beer Menu');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('hide-beers-button').addClass('show-beers-button').text('Beer Menu');
 
 						}
 					});				
@@ -314,8 +317,8 @@ $(document).on('ready', function(){
 					$('.more-brewery-info-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('less-brewery-info-button more-brewery-info-button').text('More Info');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('less-brewery-info-button').addClass('more-brewery-info-button').text('More Info');
 
 						}
 					});
@@ -335,7 +338,7 @@ $(document).on('ready', function(){
 								var beerChoice = beerMenuData.data[i];
 								var beerId = beerChoice.id;
 								var beerChoiceStyleObj = (beerChoice.style || {});
-								var beerChoiceListItem = $('<li>').addClass('beer-choice-list-item').attr('data-brewerydb-beerid', beerId).text(beerChoice.name);
+								var beerChoiceListItem = $('<li>').addClass('beer-choice-list-item bg-warning').attr('data-brewerydb-beerid', beerId).text(beerChoice.name);
 								var beerChoiceStyle = $('<h6>').addClass('beer-choice-style').attr('data-brewerydb-styleid', beerChoice.styleId).text(beerChoiceStyleObj.name);
 								var abvIbuStats = $('<h6>').addClass('abv-ibu-stats').text('ABV: ' + (beerChoice.abv || 'n/a') + '  IBU: ' + (beerChoice.ibu || 'n/a'));
 								var beerChoiceDescription = $('<p>').addClass('beer-choice-description').text(beerChoice.description);
@@ -355,21 +358,21 @@ $(document).on('ready', function(){
 
 				// Hide beers menu
 				$('body').on('click', '.hide-beers-button', function(){
-					$(this).toggleClass('hide-beers-button show-beers-button').text('Beer Menu');
+					$(this).removeClass('hide-beers-button').addClass('show-beers-button').text('Beer Menu');
 					var brewerydbBreweryId = $(this).closest('.brewery-location').attr('data-brewerydb-breweryid');
 					$('.beer-menu-div[data-brewerydb-breweryid='+brewerydbBreweryId+']').hide();
 				});			
 
 				// Show beers Menu (w/o reloading get request)
 				$('body').on('click', '.show-beers-button', function(){
-					$(this).toggleClass('hide-beers-button show-beers-button').text('Hide Beers');
+					$(this).addClass('hide-beers-button').removeClass('show-beers-button').text('Hide Beers');
 					
 					// hide other beer menus if they're visible to make room for brewery info 
 					$('.beer-menu-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('hide-beers-button show-beers-button').text('Beer Menu');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('hide-beers-button').addClass('show-beers-button').text('Beer Menu');
 
 						}
 					});				
@@ -378,8 +381,8 @@ $(document).on('ready', function(){
 					$('.more-brewery-info-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('less-brewery-info-button more-brewery-info-button').text('More Info');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('less-brewery-info-button').addClass('more-brewery-info-button').text('More Info');
 
 						}
 					});
@@ -391,13 +394,13 @@ $(document).on('ready', function(){
 
 				// get more brewery info 
 				$('body').on('click', '.get-more-brewery-info-button', function(){
-					$(this).toggleClass('get-more-brewery-info-button less-brewery-info-button').text('Less Info');
+					$(this).addClass('less-brewery-info-button').removeClass('get-more-brewery-info-button').text('Less Info');
 					// hide other beer menus if they're visible to make room for brewery info 
 					$('.beer-menu-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('hide-beers-button show-beers-button').text('Beer Menu');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('hide-beers-button').addClass('show-beers-button').text('Beer Menu');
 
 						}
 					});				
@@ -406,8 +409,8 @@ $(document).on('ready', function(){
 					$('.more-brewery-info-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('less-brewery-info-button more-brewery-info-button').text('More Info');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('less-brewery-info-button').addClass('more-brewery-info-button').text('More Info');
 
 						}
 					});
@@ -419,7 +422,7 @@ $(document).on('ready', function(){
 					for(var i=0; i<returnedBrewerySearchData.data.length; i++){
 						if (returnedBrewerySearchData.data[i].id == brewerydbBreweryId){
 							var breweryData = returnedBrewerySearchData.data[i];
-							var moreBreweryInfoDiv = $('<div>').addClass('more-brewery-info-div').attr({'data-brewerydb-locid': brewerydbLocationId, 'data-brewerydb-breweryid': breweryData.id});
+							var moreBreweryInfoDiv = $('<div>').addClass('more-brewery-info-div bg-info').attr({'data-brewerydb-locid': brewerydbLocationId, 'data-brewerydb-breweryid': breweryData.id});
 
 							for (var j=0; j<breweryData.locations.length; j++){
 
@@ -453,21 +456,21 @@ $(document).on('ready', function(){
 
 				// hide more brewery info div
 				$('body').on('click', '.less-brewery-info-button', function(){
-					$(this).toggleClass('more-brewery-info-button less-brewery-info-button').text('More Info');
+					$(this).addClass('more-brewery-info-button').removeClass('less-brewery-info-button').text('More Info');
 					var brewerydbLocationId = $(this).closest('.brewery-location').attr('data-brewerydb-locid');
 					$('.more-brewery-info-div[data-brewerydb-locid='+brewerydbLocationId+']').hide();
 				});	
 
 				// show more brewery info div
 				$('body').on('click', '.more-brewery-info-button', function(){
-					$(this).toggleClass('more-brewery-info-button less-brewery-info-button').text('Less Info');
+					$(this).removeClass('more-brewery-info-button').addClass('less-brewery-info-button').text('Less Info');
 					
 					// hide other beer menu info to make room for brewery info TEST CHANGE!!
 					$('.beer-menu-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('hide-beers-button show-beers-button').text('Beer Menu');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.hide-beers-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('hide-beers-button').addClass('show-beers-button').text('Beer Menu');
 
 						}
 					});
@@ -476,8 +479,8 @@ $(document).on('ready', function(){
 					$('.more-brewery-info-div').each(function(){
 						if ( $(this).css('display') != 'none'){
 							$(this).hide();
-							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid')
-							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').toggleClass('less-brewery-info-button more-brewery-info-button').text('More Info');
+							var localDivBreweryId = $(this).attr('data-brewerydb-breweryid');
+							$('.less-brewery-info-button[data-brewerydb-breweryid='+localDivBreweryId+']').removeClass('less-brewery-info-button').addClass('more-brewery-info-button').text('More Info');
 
 						}
 					});

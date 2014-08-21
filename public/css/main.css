@@ -1,6 +1,19 @@
+body{
+	background-color: rgb(241, 196, 15);
+}
+h1{
+	background-color: rgb(230, 126, 34);
+}
+#search-results-list{
+	/*background-color: rgb(236, 240, 241);*/
+}
 .brewery-name{
 	font-weight: bold;
 }
 .brewery-location{
-	margin: 0 0 6px 0;
+	margin: 24px 0 24px 0;
+
+}
+.beer-choice-list-item{
+	margin: 18px 0 18px 0;
 }
