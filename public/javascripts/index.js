@@ -46,7 +46,7 @@ $(document).on('ready', function(){
 						// only render breweries that are open to the public
 						if ( locData.openToPublic == 'Y'){
 							// create Brewery List Item with brewery name
-							var breweryLoc = $('<li>').addClass('brewery-location').text(locData.brewery.name).attr({'data-brewerydb-locid': locData.id, 'data-brewerydb-breweryid': locData.breweryId});
+							var breweryLoc = $('<li>').addClass('brewery-location').html('<span class=brewery-name>' + locData.brewery.name + '</span>').attr({'data-brewerydb-locid': locData.id, 'data-brewerydb-breweryid': locData.breweryId});
 							var breweryPhone = $('<h6>').addClass('brewery-phone').text('Phone: ' + locData.phone);
 							breweryLoc.append(breweryPhone);					
 							// if there is a website, append it to the brewery info
@@ -58,8 +58,8 @@ $(document).on('ready', function(){
 								var breweryWebsite = $('<h6>').addClass('brewery-website').text('Website: ' + locData.brewery.website);
 								breweryLoc.append(breweryWebsite);
 							}
-							var getBeersButton = $('<button>').addClass('get-beers-button').attr({'type': 'button', 'data-brewerydb-locid': locData.id, 'data-brewerydb-breweryid': locData.breweryId}).text('Beer Menu');
-							var moreInfoButton = $('<button>').addClass('get-more-brewery-info-button').attr({'type': 'button', 'data-brewerydb-locid': locData.id, 'data-brewerydb-breweryid': locData.breweryId}).text('More Info');
+							var getBeersButton = $('<button>').addClass('get-beers-button btn btn-warning btn-sm').attr({'type': 'button', 'data-brewerydb-locid': locData.id, 'data-brewerydb-breweryid': locData.breweryId}).text('Beer Menu');
+							var moreInfoButton = $('<button>').addClass('get-more-brewery-info-button btn btn-info btn-sm').attr({'type': 'button', 'data-brewerydb-locid': locData.id, 'data-brewerydb-breweryid': locData.breweryId}).text('More Info');
 							breweryLoc.append(getBeersButton);
 							breweryLoc.append(moreInfoButton);
 							// append the list item & info to the ordered search results list
@@ -281,8 +281,8 @@ $(document).on('ready', function(){
 									var breweryWebsite = $('<h6>').addClass('brewery-website').text('Website: ' + breweryData.website);
 									breweryLoc.append(breweryWebsite);
 								}
-								var getBeersButton = $('<button>').addClass('get-beers-button').attr({'type': 'button', 'data-brewerydb-locid': brewerySearchLoc.id, 'data-brewerydb-breweryid': breweryData.id}).text('Beer Menu');
-								var moreInfoButton = $('<button>').addClass('get-more-brewery-info-button').attr({'type': 'button', 'data-brewerydb-locid': brewerySearchLoc.id, 'data-brewerydb-breweryid': breweryData.id}).text('More Info');
+								var getBeersButton = $('<button>').addClass('get-beers-button btn btn-warning btn-sm').attr({'type': 'button', 'data-brewerydb-locid': brewerySearchLoc.id, 'data-brewerydb-breweryid': breweryData.id}).text('Beer Menu');
+								var moreInfoButton = $('<button>').addClass('get-more-brewery-info-button btn btn-info btn-sm').attr({'type': 'button', 'data-brewerydb-locid': brewerySearchLoc.id, 'data-brewerydb-breweryid': breweryData.id}).text('More Info');
 								breweryLoc.append(getBeersButton);
 								breweryLoc.append(moreInfoButton);
 								// append the list item & info to the ordered search results list

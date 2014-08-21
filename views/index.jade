@@ -1,25 +1,33 @@
 extends layout
 
 block content
-	h1 Brewery Navigator
-	form#loc-search-form
-		label(for='brewery-beer-search') Brewery Search
-		br
-		input#search-field(type='text' placeholder='Brewery name' name='brewery-beer-search')
-		br
-		//- filters to choose between brewery or beer search
-		//- h5 Filters:
-		//- label Breweries
-		//- 	input#brewery-filter(type='radio' name='filter-beer-or-brewery' value='brewery' checked='checked')
-		//- label Beers
-		//- 	input#beer-filter(type='radio' name='filter-beer-or-brewery' value='beer')
-		//- br
-		input#city-field(type='text' placeholder='City')
-		br
-		input#state-field(type='text' placeholder='State')
-		br
-		//- label(for='locationonly') Search Breweries by Location
-		//- 	input#location-only(type='checkbox' name='locationonly')
-		button#city-state-search(type='submit') Search
-	p#error-message
-	ol#search-results-list
+	.container
+		.row
+			.col-xs-12
+				h1 Brewery Navigator
+				form.form-horizontal#loc-search-form
+					.form-group
+						label.col-xs-2.control-label.control-label-lg(for='brewery-beer-search') Brewery
+						.col-xs-10
+							input.form-control#search-field(type='text' placeholder='Brewery name' name='brewery-beer-search')
+					
+					//- filters to choose between brewery or beer search
+					//- h5 Filters:
+					//- label Breweries
+					//- 	input#brewery-filter(type='radio' name='filter-beer-or-brewery' value='brewery' checked='checked')
+					//- label Beers
+					//- 	input#beer-filter(type='radio' name='filter-beer-or-brewery' value='beer')
+					//- br
+					.form-group
+						label.col-xs-2.control-label(for='city-field') City
+						.col-xs-10
+							input.form-control#city-field(type='text' placeholder='City' name='city-field')
+					.form-group
+						label.col-xs-2.control-label(for='state-field') State
+						.col-xs-10
+							input.form-control#state-field(type='text' placeholder='State - ex) California, not CA' name='state-field')
+					//- label(for='locationonly') Search Breweries by Location
+					//- 	input#location-only(type='checkbox' name='locationonly')
+					button.btn.btn-primary.btn-lg.btn-block#city-state-search(type='submit') Search
+				p.text-danger#error-message
+				ol#search-results-list
