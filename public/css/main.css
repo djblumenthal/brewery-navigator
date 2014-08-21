@@ -1,9 +1,16 @@
-body{
-	background-color: rgb(241, 196, 15);
+#main-column{
+	background-color: rgb(189, 195, 199);
 }
+
 h1{
-	background-color: rgb(230, 126, 34);
+	background-color: rgb(44, 62, 80);
+	color: #f39c12;
+	padding: 10px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
 }
+
 #search-results-list{
 	/*background-color: rgb(236, 240, 241);*/
 }
@@ -11,9 +18,26 @@ h1{
 	font-weight: bold;
 }
 .brewery-location{
-	margin: 24px 0 24px 0;
+	margin: 18px 0 18px 0;
+	padding: 8px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	background-color: rgb(236, 240, 241);
 
 }
 .beer-choice-list-item{
 	margin: 18px 0 18px 0;
+	padding: 8px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
+	background-color: white;
+}
+.more-brewery-info-div{
+	margin: 18px 0 18px 0;
+	padding: 8px;
+	-webkit-border-radius: 5px;
+	-moz-border-radius: 5px;
+	border-radius: 5px;
 }

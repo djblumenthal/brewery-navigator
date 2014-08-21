@@ -42,7 +42,7 @@ $(document).on('ready', function(){
 						if ( locData.openToPublic == 'Y') {
 							
 							// create Brewery List Item with brewery name
-							var breweryLoc = $('<li>').addClass('brewery-location bg-success').html('<span class=brewery-name>' + locData.brewery.name + '</span>').attr({'data-brewerydb-locid': locData.id, 'data-brewerydb-breweryid': locData.breweryId});
+							var breweryLoc = $('<li>').addClass('brewery-location ').html('<span class=brewery-name>' + locData.brewery.name + '</span>').attr({'data-brewerydb-locid': locData.id, 'data-brewerydb-breweryid': locData.breweryId});
 
 							// create brewery phone number description
 							var breweryPhone = $('<h6>').addClass('brewery-phone').text('Phone: ' + (locData.phone || 'n/a'));
@@ -272,7 +272,7 @@ $(document).on('ready', function(){
 
 							// 	// Adding render functionality to Brewery Search
 								
-								var breweryLoc = $('<li>').addClass('brewery-location bg-success').text(breweryData.name).attr({'data-brewerydb-locid': brewerySearchLoc.id, 'data-brewerydb-breweryid': breweryData.id});
+								var breweryLoc = $('<li>').addClass('brewery-location ').text(breweryData.name).attr({'data-brewerydb-locid': brewerySearchLoc.id, 'data-brewerydb-breweryid': breweryData.id});
 								var breweryPhone = $('<h6>').addClass('brewery-phone').text('Phone: ' + brewerySearchLoc.phone);					
 								// if there is a website, append it to the brewery info
 								var breweryWebsiteLink;
