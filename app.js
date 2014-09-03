@@ -23,6 +23,6 @@ app.get('/beermenu', indexControllers.beerMenu);
 
 app.get('/brewerysearch', indexControllers.brewerySearch);
 
-var server = app.listen(4790, function() {
+var server = app.listen(process.env.PORT||4790, function() {
 	console.log('Express server listening on port ' + server.address().port);
 });
