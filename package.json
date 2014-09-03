@@ -4,6 +4,7 @@
     "jade": "1.x",
     "body-parser": "1.x",
     "brewerydb-node": "0.0.1",
-    "request": "~2.40.0"
+    "request": "~2.40.0",
+    "mongoose": "~3.8.15"
   }
 }
