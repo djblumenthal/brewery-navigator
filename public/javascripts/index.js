@@ -273,6 +273,7 @@ $(document).on('ready', function(){
 
 						}
 					}
+
 				}
 			});
 		}
@@ -314,5 +315,28 @@ $(document).on('ready', function(){
 				}
 			});
 		}
+
+/* Adding pagination (WIP)
+		// render brewery search results list
+		if (breweryResultsArray.length != 0){
+			// if search returned 10 or fewer items, render each brewery in the list
+			if (breweryResultsArray.length <= 10){
+				for (var i = 0; i < breweryResultsArray.length; i++) {
+					searchResultsList.append( createBreweryListItem(breweryResultsArray[i]));
+				}
+			}
+
+			else {
+				for (var i=0; i<breweryResultsArray.length; i++){
+					if (i<10){
+						searchResultsList.append( createBreweryListItem(breweryResultsArray[i]));
+					}
+				}
+				
+			}
+
+		}*/
+
+
 	});
 });
